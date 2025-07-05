@@ -46,7 +46,14 @@ public class ContatoController {
             .map(contato -> {
                 contato.setNome(contatoDetalhes.getNome());
                 contato.setEmail(contatoDetalhes.getEmail());
-                // ... setar os outros campos
+                contato.setTelefonePrimario(contatoDetalhes.getTelefonePrimario());
+                contato.setTelefoneSecundario(contatoDetalhes.getTelefoneSecundario());
+                contato.setEmpresa(contatoDetalhes.getEmpresa());
+                contato.setCargo(contatoDetalhes.getCargo());
+                contato.setAniversario(contatoDetalhes.getAniversario());
+                contato.setCategoria(contatoDetalhes.getCategoria());
+                contato.setFavorito(contatoDetalhes.isFavorito());
+                // Salva o objeto 'contato' que acabamos de modificar
                 Contato atualizado = repository.save(contato);
                 return ResponseEntity.ok(atualizado);
             }).orElse(ResponseEntity.notFound().build());
