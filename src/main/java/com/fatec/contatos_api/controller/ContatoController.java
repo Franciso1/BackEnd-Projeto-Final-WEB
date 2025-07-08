@@ -10,7 +10,7 @@ import com.fatec.contatos_api.entities.Contato;
 
 @RestController
 @RequestMapping("/api/contatos")
-@CrossOrigin("*") // Permite acesso de qualquer origem
+@CrossOrigin("origins = \"https://main.d35dmr9tr2ye12.amplifyapp.com\"") // Permite acesso de qualquer origem
 public class ContatoController {
 
     @Autowired
