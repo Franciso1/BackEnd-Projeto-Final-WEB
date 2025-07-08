@@ -1,30 +1,31 @@
-# Estágio 1: Build com Maven (O "Construtor")
-# Usa uma imagem oficial que já vem com Maven e Java para compilar seu projeto.
-FROM maven:3.8.5-openjdk-17 AS build
+# --- ESTÁGIO 1: Build com Maven e Alpine ---
+# Usamos uma imagem oficial Temurin (OpenJDK) baseada em Alpine, que é leve.
+# Esta imagem já contém o Maven e o JDK necessários para compilar seu projeto.
+FROM maven:3.9.4-eclipse-temurin-21-alpine AS build
 
-# Cria um diretório de trabalho dentro do contêiner.
+# Define o diretório de trabalho dentro do contêiner.
 WORKDIR /app
 
-# Copia todo o seu código para dentro do contêiner.
+# Copia todo o seu código para o diretório de trabalho.
 COPY . .
 
-# Roda o comando para gerar o arquivo .jar, pulando os testes para acelerar.
+# Roda o comando do Maven para gerar o arquivo .jar executável.
 RUN mvn clean package -DskipTests
 
-# --- (Fim do primeiro estágio) ---
+# --- ESTÁGIO 2: A Imagem Final (LEVE com Alpine) ---
+# Começamos com uma imagem oficial Temurin JRE baseada em Alpine.
+# JRE (Java Runtime Environment) é menor que o JDK, pois contém apenas
+# o necessário para EXECUTAR, não para compilar.
+FROM eclipse-temurin:21-jre-alpine
 
-# Estágio 2: Execução (A Imagem Final e Leve)
-# Começa com uma imagem Java "slim" (magra), que é muito menor.
-FROM openjdk:17-jdk-slim
-
-# Cria um diretório de trabalho.
+# Define o diretório de trabalho.
 WORKDIR /app
 
 # Copia APENAS o arquivo .jar gerado no estágio anterior.
 COPY --from=build /app/target/*.jar app.jar
 
-# Expõe a porta que sua aplicação usa (conforme seu application.properties).
+# "Avisa" ao Docker que sua aplicação, dentro do contêiner, usa a porta 8080.
 EXPOSE 8080
 
-# Comando final que será executado quando o contêiner iniciar.
+# O comando que será executado quando o contêiner iniciar.
 ENTRYPOINT ["java", "-jar", "app.jar"]
