@@ -1,12 +1,30 @@
-FROM maven:3.9.4-eclipse-temurin-21-alpine AS build
-COPY . /home/app/student-backend
-RUN mvn -v
-RUN mvn -f /home/app/student-backend/pom.xml clean package
+# Estágio 1: Build com Maven (O "Construtor")
+# Usa uma imagem oficial que já vem com Maven e Java para compilar seu projeto.
+FROM maven:3.8.5-openjdk-17 AS build
 
+# Cria um diretório de trabalho dentro do contêiner.
+WORKDIR /app
 
-#Step 2 - Run backend
-FROM alpine/java:21-jdk
-COPY --from=build /home/app/student-backend/target/*.jar /usr/local/lib/student-backend.jar
-VOLUME /tmp
-EXPOSE 80:8080
-ENTRYPOINT ["java", "-jar", "/usr/local/lib/student-backend.jar"]
+# Copia todo o seu código para dentro do contêiner.
+COPY . .
+
+# Roda o comando para gerar o arquivo .jar, pulando os testes para acelerar.
+RUN mvn clean package -DskipTests
+
+# --- (Fim do primeiro estágio) ---
+
+# Estágio 2: Execução (A Imagem Final e Leve)
+# Começa com uma imagem Java "slim" (magra), que é muito menor.
+FROM openjdk:17-jdk-slim
+
+# Cria um diretório de trabalho.
+WORKDIR /app
+
+# Copia APENAS o arquivo .jar gerado no estágio anterior.
+COPY --from=build /app/target/*.jar app.jar
+
+# Expõe a porta que sua aplicação usa (conforme seu application.properties).
+EXPOSE 8080
+
+# Comando final que será executado quando o contêiner iniciar.
+ENTRYPOINT ["java", "-jar", "app.jar"]
